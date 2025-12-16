@@ -8,12 +8,17 @@
     "start": "node dist/index.js",
     "build": "tsup src/index.ts --minify --format esm"
   },
-  "author": "",
-  "license": "ISC",
+  "author": "Rémy THIBAUT",
+  "license": "MIT",
   "description": "Bot Discord pour l'association Clash Of Clan de l'ESGI",
   "dependencies": {
+    "@types/pg": "^8.16.0",
+    "axios": "^1.13.2",
+    "clashofclans.js": "^3.5.1",
     "discord.js": "^14.24.2",
-    "dotenv": "^17.2.3"
+    "dotenv": "^17.2.3",
+    "pg": "^8.16.3",
+    "ts-node": "^10.9.2"
   },
   "devDependencies": {
     "tsup": "^8.5.0",

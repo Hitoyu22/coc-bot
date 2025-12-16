@@ -1,0 +1,21 @@
+CREATE TABLE coc."user" (
+    id uuid NOT NULL DEFAULT gen_random_uuid(),
+    name varchar(255) NOT NULL,
+    surname varchar(255) NOT NULL,
+    discord_tag varchar(255) NOT NULL,
+    discord_id varchar(255) NOT NULL,
+    hdv integer NOT NULL,
+    classe varchar(255) NOT NULL,
+    mail varchar(255) NOT NULL,
+    role varchar(255) NOT NULL,
+    game_name varchar(255) NOT NULL,
+    game_id varchar(255) NOT NULL,
+    info varchar(255) NOT NULL,
+    clangame double precision NOT NULL,
+    ligue double precision NOT NULL,
+    war double precision NOT NULL,
+    raid double precision NOT NULL,
+    dons double precision NOT NULL,
+    created_at timestamptz NOT NULL DEFAULT now(),
+    updated_at timestamptz NOT NULL DEFAULT now()
+);

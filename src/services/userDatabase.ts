@@ -77,4 +77,9 @@ export class UserDatabase {
         const result = await pool.query(query, params);
         return result.rowCount;
     }
+
+    public async getAllUsers() {
+        const result = await pool.query('SELECT name, surname, discord_id, game_name FROM "user"');
+        return result.rows;
+    }
 }

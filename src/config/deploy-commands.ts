@@ -8,10 +8,9 @@ export async function deployGuildCommands() {
     try {
         console.log("Début du rafraîchissement des commandes (/)");
 
-        const commandsData = Object.values(commands).map((command) => command.data.toJSON());
+        await rest.put(Routes.applicationCommands(config.DISCORD_CLIENT_ID), { body: [] });
 
-        const commandNames = commandsData.map(c => c.name);
-        console.log(`Commandes identifiées à déployer : [${commandNames.join(", ")}]`);
+        const commandsData = Object.values(commands).map((command) => command.data.toJSON());
 
         await rest.put(
             Routes.applicationGuildCommands(

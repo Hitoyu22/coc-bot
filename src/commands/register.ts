@@ -2,7 +2,6 @@ import {
     ChatInputCommandInteraction,
     SlashCommandBuilder,
     GuildMember,
-    AutocompleteInteraction,
     MessageFlags,
     ContainerBuilder,
     ThumbnailBuilder
@@ -44,9 +43,9 @@ export const data = new SlashCommandBuilder()
             .setRequired(true))
     .addStringOption(option =>
         option.setName("classe")
-            .setDescription("Ta classe")
+            .setDescription("Année + Filière (ex: 3IW, 5AL...). Pour la 1ère année, précise I ou A (ex: 1A, 1I).")
             .setRequired(true)
-            .setAutocomplete(true))
+            .setAutocomplete(false))
     .addStringOption(option =>
         option.setName("tag_coc")
             .setDescription("Ton tag Clash of Clans (ex: #2PP...)")
@@ -56,17 +55,6 @@ export const data = new SlashCommandBuilder()
             .setDescription("Ton adresse email scolaire (@myskolae)")
             .setRequired(true));
 
-export async function autocomplete(interaction: AutocompleteInteraction) {
-    const focusedValue = interaction.options.getFocused().toLowerCase();
-
-    const filtered = CLASSES_LIST.filter(choice =>
-        choice.name.toLowerCase().includes(focusedValue) ||
-        choice.value.toLowerCase().includes(focusedValue)
-    ).slice(0, 25);
-
-    await interaction.respond(filtered);
-}
-
 export async function execute(interaction: ChatInputCommandInteraction) {
     await interaction.deferReply({
         flags: MessageFlags.Ephemeral
@@ -74,13 +62,20 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
     const name = interaction.options.getString("nom", true);
     const firstname = interaction.options.getString("prenom", true);
-    const classe = interaction.options.getString("classe", true);
-    let tagCoc = interaction.options.getString("tag_coc", true).toUpperCase();
     const email = interaction.options.getString("email", true);
+
+    const rawClasse = interaction.options.getString("classe", true);
+    const classe = rawClasse.toUpperCase().replace(/\s+/g, '');
+
+    let tagCoc = interaction.options.getString("tag_coc", true).toUpperCase();
 
     const classeExiste = CLASSES_LIST.some(c => c.value === classe);
     if (!classeExiste) {
-        await interaction.editReply(`**Classe invalide.** Choisis une classe dans la liste proposée.`);
+        await interaction.editReply(
+            `**Classe invalide :** "${rawClasse}".\n` +
+            `Merci de respecter le format : Année + Filière.\n` +
+            `- Exemples valides : **1A, 1I, 2A, 3IW, 4AL, 5SI...**`
+        );
         return;
     }
 

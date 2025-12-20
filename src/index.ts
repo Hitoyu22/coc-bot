@@ -39,6 +39,19 @@ client.on(Events.InteractionCreate, async (interaction: Interaction) => {
     try {
         if (interaction.isAutocomplete()) {
             const command = commands[interaction.commandName as keyof typeof commands];
+
+            if (!command) {
+                console.error(`Aucune commande trouvée pour ${interaction.commandName}`);
+                return;
+            }
+
+            if ('autocomplete' in command && typeof (command as any).autocomplete === 'function') {
+                try {
+                    await (command as any).autocomplete(interaction);
+                } catch (error) {
+                    console.error(`Erreur dans l'autocomplete de ${interaction.commandName}`, error);
+                }
+            }
             return;
         }
 

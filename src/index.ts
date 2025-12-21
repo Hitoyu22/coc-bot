@@ -1,5 +1,4 @@
 import {
-    AutocompleteInteraction,
     Client,
     Events,
     GatewayIntentBits,
@@ -184,10 +183,20 @@ async function updateParticipantsList(
     clanId: string,
     roleName: string
 ) {
-    const channelName = `participants-clan-${clanId}`;
-    const channel = guild.channels.cache.find(
-        (c: any) => c.name === channelName
-    ) as TextChannel;
+    const configId = clanId === "1" ? config.PARTICIPANT_CLAN_1_ID : config.PARTICIPANT_CLAN_2_ID;
+    const partialName = `participants-clan${clanId}`;
+
+    let channel: TextChannel | undefined;
+
+    if (configId) {
+        channel = guild.channels.cache.get(configId) as TextChannel | undefined;
+    }
+
+    if (!channel) {
+        channel = guild.channels.cache.find(
+            (c: any) => c.name.includes(partialName) && c.isTextBased()
+        ) as TextChannel | undefined;
+    }
 
     if (!channel) {
         return;

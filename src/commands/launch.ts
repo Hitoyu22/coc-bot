@@ -6,6 +6,7 @@ import {
     EmbedBuilder,
     MessageFlags
 } from "discord.js";
+import { config } from "../config/config";
 
 const clans = [
     { name: "Clan 1", value: "1" },
@@ -61,14 +62,24 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     const eventLabel =
         events.find(e => e.value === eventType)?.name ?? "Évènement";
 
-    const targetChannelName = `annonces-clan-${clanId}`;
-    const targetChannel = interaction.guild?.channels.cache.find(
-        c => c.name === targetChannelName
-    ) as TextChannel | undefined;
+    const configId = clanId === "1" ? config.CLAN_1_ID : config.CLAN_2_ID;
+    const partialName = `annonces-clan-${clanId}`;
+
+    let targetChannel: TextChannel | undefined;
+
+    if (configId) {
+        targetChannel = interaction.guild?.channels.cache.get(configId) as TextChannel | undefined;
+    }
+
+    if (!targetChannel) {
+        targetChannel = interaction.guild?.channels.cache.find(
+            c => c.name.includes(partialName) && c.isTextBased()
+        ) as TextChannel | undefined;
+    }
 
     if (!targetChannel) {
         return interaction.reply({
-            content: `Erreur : le salon \`${targetChannelName}\` est introuvable.`,
+            content: `Erreur : le salon contenant \`${partialName}\` est introuvable.`,
             flags: MessageFlags.Ephemeral
         });
     }

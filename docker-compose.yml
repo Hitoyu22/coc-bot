@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:17
+    container_name: coc_esgi_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: coc-esgi
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data_coc:/var/lib/postgresql/data
+
+volumes:
+  postgres_data_coc:

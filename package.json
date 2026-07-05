@@ -6,19 +6,28 @@
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "start": "node dist/index.js",
-    "build": "tsup src/index.ts --minify --format esm"
+    "build": "tsup src/index.ts --minify --format esm",
+    "typeorm": "typeorm-ts-node-esm",
+    "migration:generate": "npm run typeorm -- migration:generate -d src/config/dataSource.ts",
+    "migration:run": "npm run typeorm -- migration:run -d src/config/dataSource.ts",
+    "migration:revert": "npm run typeorm -- migration:revert -d src/config/dataSource.ts"
   },
   "author": "Rémy THIBAUT",
   "license": "MIT",
   "description": "Bot Discord pour l'association Clash Of Clan de l'ESGI (v2)",
   "dependencies": {
+    "@types/node-cron": "^3.0.11",
     "@types/pg": "^8.16.0",
     "axios": "^1.13.2",
     "clashofclans.js": "^3.5.1",
     "discord.js": "^14.24.2",
     "dotenv": "^17.2.3",
+    "exceljs": "^4.4.0",
+    "node-cron": "^4.5.0",
     "pg": "^8.16.3",
-    "ts-node": "^10.9.2"
+    "reflect-metadata": "^0.2.2",
+    "ts-node": "^10.9.2",
+    "typeorm": "^1.0.0"
   },
   "devDependencies": {
     "tsup": "^8.5.0",

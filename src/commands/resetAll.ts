@@ -9,6 +9,7 @@ import {
     Role
 } from "discord.js";
 import { UserDatabase } from "../services/userDatabase";
+import { AppDataSource } from "../config/dataSource";
 
 const ROLES_TO_REMOVE = [
     "registered",
@@ -73,6 +74,12 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
         await confirmation2.update({ content: "Nettoyage en cours... Veuillez patienter.", components: [] });
 
+        // Supprimer les événements et participations avant les users
+        await AppDataSource.query('DELETE FROM "war_participation"');
+        await AppDataSource.query('DELETE FROM "raid_participation"');
+        await AppDataSource.query('DELETE FROM "war_event"');
+        await AppDataSource.query('DELETE FROM "raid_event"');
+
         const userDatabase = new UserDatabase();
         const deletedCount = await userDatabase.resetUsers();
 
@@ -110,7 +117,8 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
         await interaction.editReply({
             content: `**Opération terminée avec succès.**\n\n` +
-                `- **Base de données :** ${deletedCount} utilisateurs supprimés.\n` +
+                `- **Utilisateurs supprimés :** ${deletedCount}\n` +
+                `- **Historique guerres/raids effacé**\n` +
                 `- **Discord :** Rôles retirés sur ${rolesRemovedCount} membres.\n` +
                 `(Rôles ciblés : ${ROLES_TO_REMOVE.join(", ")})`,
             components: []

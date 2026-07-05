@@ -1,12 +1,12 @@
 import { SlashCommandBuilder, ChatInputCommandInteraction, PermissionFlagsBits, User } from "discord.js";
-import { pool } from "../config/pg";
+import { AppDataSource } from "../config/dataSource";
 
 const ACTIVITIES = [
     { name: "GDC", value: "war" },
     { name: "Ligue", value: "ligue" },
-    { name: "Dons", value: "dons" },
+    { name: "Dons", value: "donation" },
     { name: "Jeux de clans", value: "clangame" },
-    { name: "Raids", value: "raid" }
+    { name: "Raids", value: "raids" },
 ];
 
 export const data = new SlashCommandBuilder()
@@ -68,8 +68,9 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                 RETURNING discord_id
         `;
 
-        const result = await pool.query(query, [points, uniqueUserIds]);
-        const updatedCount = result.rowCount;
+        const result = await AppDataSource.query(query, [points, uniqueUserIds]);
+        const rows = Array.isArray(result[0]) ? result[0] : result;
+        const updatedCount = rows.length;
 
         const userList = uniqueUsers.map(u => `- ${u.username}`).join("\n");
 

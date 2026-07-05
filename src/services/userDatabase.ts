@@ -1,85 +1,62 @@
-import { pool } from '../config/pg';
+import { AppDataSource } from '../config/dataSource';
+import { User, Promotion, ContractType, Rentree } from '../entities/User';
 
 export interface NewUser {
     name: string;
     surname: string;
-    discord_tag: string;
-    discord_id: string;
-    hdv: number;
-    classe: string;
     mail: string;
-    role: string;
-    game_name: string;
+    classe: number;
+    promotion: Promotion | null;
+    contract_type: ContractType | null;
+    rentree: Rentree | null;
     game_id: string;
-    info: string;
+    game_name: string;
+    hdv: number;
+    discord_id: string;
+    discord_tag: string;
 }
 
+export { Promotion, ContractType, Rentree };
+
 export class UserDatabase {
-
-    public async findUserByDiscordId(id: string) {
-        const result = await pool.query('SELECT * FROM "user" WHERE discord_id = $1', [id]);
-        return result.rows[0];
+    private get repo() {
+        return AppDataSource.getRepository(User);
     }
 
-    public async findUserByCocTag(tag: string) {
-        const result = await pool.query('SELECT * FROM "user" WHERE game_id = $1', [tag]);
-        return result.rows[0];
+    async findUserByDiscordId(id: string) {
+        return this.repo.findOne({ where: { discord_id: id } });
     }
 
-    public async createUser(data: NewUser) {
-        const query = `
-            INSERT INTO "user" 
-            (name, surname, discord_tag, discord_id, hdv, classe, mail, role, game_name, game_id, info, clangame, ligue, war, raid, dons)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, 0, 0, 0, 0, 0)
-            RETURNING *;
-        `;
-
-        const values = [
-            data.name,
-            data.surname,
-            data.discord_tag,
-            data.discord_id,
-            data.hdv,
-            data.classe,
-            data.mail,
-            data.role,
-            data.game_name,
-            data.game_id,
-            data.info
-        ];
-
-        const result = await pool.query(query, values);
-        return result.rows[0];
+    async findUserByCocTag(tag: string) {
+        return this.repo.findOne({ where: { game_id: tag } });
     }
 
-    public async resetUsers() {
-        const result = await pool.query('DELETE FROM "user"');
-        return result.rowCount;
+    async createUser(data: NewUser) {
+        const user = this.repo.create(data);
+        return this.repo.save(user);
     }
 
-    public async resetPoints(discordId?: string) {
-        let query = `
-            UPDATE "user"
-            SET clangame = 0, 
-                ligue = 0, 
-                war = 0, 
-                raid = 0, 
-                dons = 0
-        `;
+    async resetUsers() {
+        const result = await AppDataSource.query(`DELETE FROM "user" RETURNING id`);
+        return result.length ?? 0;
+    }
 
-        const params: any[] = [];
+    async resetPoints(discordId?: string) {
+        const qb = this.repo.createQueryBuilder()
+            .update()
+            .set({ war: 0, ligue: 0, clangame: 0, raids: 0, donation: 0 });
 
         if (discordId) {
-            query += ` WHERE discord_id = $1`;
-            params.push(discordId);
+            qb.where('discord_id = :discordId', { discordId });
         }
 
-        const result = await pool.query(query, params);
-        return result.rowCount;
+        const result = await qb.execute();
+        return result.affected ?? 0;
     }
 
-    public async getAllUsers() {
-        const result = await pool.query('SELECT name, surname, discord_id, game_name FROM "user"');
-        return result.rows;
+    async getAllUsers() {
+        return this.repo.find({
+            select: { name: true, surname: true, discord_id: true, game_name: true },
+        });
     }
 }

@@ -8,14 +8,14 @@ import {
     UserSelectMenuInteraction,
     MessageFlags
 } from "discord.js";
-import { pool } from "../config/pg";
+import { AppDataSource } from "../config/dataSource";
 
 const ACTIVITIES = [
     { name: "GDC", value: "war" },
     { name: "Ligue", value: "ligue" },
-    { name: "Dons", value: "dons" },
+    { name: "Dons", value: "donation" },
     { name: "Jeux de clans", value: "clangame" },
-    { name: "Raids", value: "raid" }
+    { name: "Raids", value: "raids" },
 ];
 
 export const data = new SlashCommandBuilder()
@@ -70,8 +70,9 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             RETURNING discord_id
         `;
 
-        const result = await pool.query(query, [points, selectedUserIds]);
-        const updatedCount = result.rowCount;
+        const result = await AppDataSource.query(query, [points, selectedUserIds]);
+        const rows = Array.isArray(result[0]) ? result[0] : result;
+        const updatedCount = rows.length;
 
         await confirmation.update({
             content: `Points mis à jour !\n\n**${points}** points ajoutés en **${activityName}** pour **${updatedCount}** utilisateurs enregistrés.`,

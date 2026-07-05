@@ -1,3 +1,4 @@
+import 'reflect-metadata';
 import {
     Client,
     Events,
@@ -10,9 +11,16 @@ import {
     TextChannel,
     User,
 } from "discord.js";
+import cron from 'node-cron';
 import { config } from "./config/config";
+import { AppDataSource } from "./config/dataSource";
 import { commands } from "./commands";
 import { deployGuildCommands } from "./config/deploy-commands";
+import { performBackup } from "./services/backup";
+import { syncRaidsSince } from "./services/raidSync";
+import { syncLeague } from "./services/leagueSync";
+import { settingsService } from "./services/settings";
+import { getClanTag } from "./utils/clanHelper";
 
 const client = new Client({
     intents: [
@@ -220,4 +228,79 @@ async function updateParticipantsList(
     await channel.send(content);
 }
 
-client.login(config.DISCORD_TOKEN);
+AppDataSource.initialize()
+    .then(() => {
+        console.log('Base de données connectée');
+        client.login(config.DISCORD_TOKEN);
+
+        // Backup hebdomadaire le lundi à 3h du matin
+        cron.schedule('0 3 * * 1', async () => {
+            console.log('[Cron] Backup hebdomadaire...');
+            const result = await performBackup(client);
+            console.log(`[Cron] Backup: ${result.message}`);
+        });
+
+        // Synchro auto des raids le lundi à 10h (le raid se termine lundi 7h UTC).
+        // Indispensable : l'API CoC ne fournit le détail par joueur que pour le
+        // DERNIER raid — si on attend trop, les points sont perdus.
+        cron.schedule('0 10 * * 1', async () => {
+            const yearStart = await settingsService.getYearStart();
+            if (!yearStart) {
+                console.log('[Cron] Sync raids ignorée : année non démarrée.');
+                return;
+            }
+            for (const clanNum of [1, 2]) {
+                const clanTag = getClanTag(clanNum);
+                if (!clanTag) continue;
+                try {
+                    const summary = await syncRaidsSince(clanTag, clanNum, yearStart);
+                    const saved = summary.processed.filter(r => r.status === 'saved');
+                    console.log(`[Cron] Sync raids clan ${clanNum}: ${saved.length} raid(s) comptés, ${summary.totalPoints} pts.`);
+                    if (saved.length > 0 && config.BACKUP_CHANNEL_ID) {
+                        const channel = client.channels.cache.get(config.BACKUP_CHANNEL_ID) as TextChannel | undefined;
+                        if (channel?.isTextBased()) {
+                            await channel.send(
+                                `🏰 **Sync auto des raids — Clan ${clanNum}** : ${saved.length} raid(s) comptés, ` +
+                                `**${summary.totalPoints.toFixed(2)} pts** distribués. Détail : \`/history\``
+                            );
+                        }
+                    }
+                } catch (err) {
+                    console.error(`[Cron] Sync raids clan ${clanNum} échouée:`, err);
+                }
+            }
+        });
+
+        // Synchro auto de la ligue (CWL) le 12 du mois à 10h : la CWL se termine
+        // vers le 11, et l'API n'expose le groupe que pendant/juste après la saison.
+        cron.schedule('0 10 12 * *', async () => {
+            const yearStart = await settingsService.getYearStart();
+            if (!yearStart) {
+                console.log('[Cron] Sync ligue ignorée : année non démarrée.');
+                return;
+            }
+            for (const clanNum of [1, 2]) {
+                const clanTag = getClanTag(clanNum);
+                if (!clanTag) continue;
+                try {
+                    const result = await syncLeague(clanTag, clanNum);
+                    console.log(`[Cron] Sync ligue clan ${clanNum}: ${result.status}${result.season ? ` (${result.season})` : ''}${result.points ? ` — ${result.points} pts` : ''}`);
+                    if (result.status === 'saved' && config.BACKUP_CHANNEL_ID) {
+                        const channel = client.channels.cache.get(config.BACKUP_CHANNEL_ID) as TextChannel | undefined;
+                        if (channel?.isTextBased()) {
+                            await channel.send(
+                                `🏆 **Sync auto ligue ${result.season} — Clan ${clanNum}** : ${result.warsFound} guerres, ` +
+                                `${result.matched} joueurs, **${result.points?.toFixed(2)} pts** distribués. Détail : \`/history\``
+                            );
+                        }
+                    }
+                } catch (err) {
+                    console.error(`[Cron] Sync ligue clan ${clanNum} échouée:`, err);
+                }
+            }
+        });
+    })
+    .catch((err) => {
+        console.error('Erreur connexion base de données :', err);
+        process.exit(1);
+    });

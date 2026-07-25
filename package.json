@@ -19,6 +19,7 @@
     "@types/node-cron": "^3.0.11",
     "@types/pg": "^8.16.0",
     "axios": "^1.13.2",
+    "cheerio": "^1.2.0",
     "clashofclans.js": "^3.5.1",
     "discord.js": "^14.24.2",
     "dotenv": "^17.2.3",

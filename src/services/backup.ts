@@ -10,8 +10,6 @@ const TABLES = [
     'raid_event',
     'raid_participation',
     'app_setting',
-    'csv_import',
-    'csv_snapshot',
 ];
 
 function sqlValue(v: unknown): string {

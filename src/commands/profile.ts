@@ -92,23 +92,23 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         embed.addFields({
             name: '🏅 Points de Clan',
             value: [
-                `**GDC :** ${user.war}`,
-                `**Ligue :** ${user.ligue}`,
-                `**Raids :** ${user.raids}`,
-                `**JdC :** ${user.clangame}`,
+                `**Guerre de clan :** ${user.war}`,
+                `**Ligue de guerre :** ${user.ligue}`,
+                `**Raids de clan :** ${user.raids}`,
+                `**Jeux de clan :** ${user.clangame}`,
                 `**Dons :** ${user.donation}`,
+                `── ── ── ── ──`,
                 `**Total :** ${totalPoints}`,
             ].join('\n'),
             inline: true,
         });
 
-        // Recent wars
         if (warParts.length > 0) {
             const recent = warParts.slice(0, 5).map(p => {
                 const we = p.war_event;
                 const date = we?.start_time ? new Date(we.start_time).toLocaleDateString('fr-FR') : '?';
-                const type = we?.type === 'gdc' ? 'GDC' : 'Ligue';
-                return `• ${type} ${date} — ${p.attacks_made}/${p.attacks_expected} atk ⭐${p.total_stars}`;
+                const type = we?.type === 'gdc' ? 'Guerre de clan' : 'Ligue de guerre';
+                return `• **${type}** ${date} — ${p.attacks_made}/${p.attacks_expected} atk`;
             });
             embed.addFields({ name: '⚔️ Dernières guerres', value: recent.join('\n'), inline: false });
         }
@@ -117,7 +117,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             const recent = raidParts.slice(0, 3).map(p => {
                 const re = p.raid_event;
                 const date = re?.start_time ? new Date(re.start_time).toLocaleDateString('fr-FR') : '?';
-                return `• Raid ${date} — ${p.attacks_used}/${p.attacks_limit} atk`;
+                return `• **Raid de clan** ${date} — ${p.attacks_used}/${p.attacks_limit} atk`;
             });
             embed.addFields({ name: '🏰 Derniers raids', value: recent.join('\n'), inline: false });
         }
@@ -126,8 +126,9 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
         await interaction.editReply({ embeds: [embed] });
 
-    } catch (error) {
-        console.error(error);
+    } catch (error: any) {
+        console.error('[Profile] Erreur:', error?.message ?? error);
+        console.error('[Profile] Stack:', error?.stack);
         await interaction.editReply("Une erreur interne est survenue.");
     }
 }

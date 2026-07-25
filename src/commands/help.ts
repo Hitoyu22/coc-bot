@@ -23,22 +23,12 @@ const COMMANDS: HelpCategory[] = [
         ],
     },
     {
-        category: '📥 Points automatiques (CSV ClashSpot)',
+        category: '🏰 Points automatiques (ClashSpot)',
         adminOnly: true,
         items: [
-            { name: '/import-csv <type> <fichier> [clan]', desc: 'Importe un CSV ClashSpot → points auto (delta depuis le dernier import)' },
-            { name: '/import-history [clan] [type] [detail]', desc: 'Historique des imports + détail par joueur' },
-        ],
-    },
-    {
-        category: '⚔️ Events (API CoC)',
-        adminOnly: true,
-        items: [
-            { name: '/sync-raids [clan]', desc: 'Compte TOUS les raids terminés depuis le début d\'année (auto chaque lundi 10h)' },
-            { name: '/save-ligue [clan]', desc: 'Sauvegarde la dernière CWL terminée, points ligue auto (auto le 12 du mois)' },
-            { name: '/save-war [clan] [type] [war_tag]', desc: 'Sauvegarde la guerre EN COURS et attribue les points' },
-            { name: '/raids [clan]', desc: 'Liste des derniers Raids Capital' },
-            { name: '/save-raid [clan] [index]', desc: 'Sauvegarde UN raid précis (points auto)' },
+            { name: '/get-raids-points <url>', desc: 'Scrape ClashSpot → attribue les points de raids aux inscrits' },
+            { name: '/get-war-points <url>', desc: 'Scrape ClashSpot → attribue les points de GDC aux inscrits' },
+            { name: '/get-league-points <url>', desc: 'Scrape ClashSpot → attribue les points de ligue (CWL) aux inscrits' },
         ],
     },
     {

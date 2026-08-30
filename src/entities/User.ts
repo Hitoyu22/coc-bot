@@ -16,6 +16,8 @@ export enum Promotion {
     RVJV = 'RVJV',
     SI = 'SI',
     MSCI = 'MSCI',
+    IABS = 'IABS',
+    ID = 'ID',
 }
 
 export enum ContractType {

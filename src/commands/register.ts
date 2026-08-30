@@ -72,6 +72,8 @@ export const data = new SlashCommandBuilder()
                 { name: "SRC — Systèmes, Réseaux et Cloud Computing", value: Promotion.SRC },
                 { name: "RVJV — Ingénierie de la Réalité Virtuelle et Jeux Vidéo", value: Promotion.RVJV },
                 { name: "SI — Cybersécurité", value: Promotion.SI },
+                { name: "IABS — Intelligence Artificielle & Business Solutions", value: Promotion.IABS },
+                { name: "ID — Ingénierie DevOps", value: Promotion.ID },
             ));
 
 export async function execute(interaction: ChatInputCommandInteraction) {

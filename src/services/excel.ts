@@ -18,6 +18,8 @@ const PROMOTION_LABELS: Record<string, string> = {
     [Promotion.RVJV]: 'Ingénierie de la Réalité Virtuelle et Jeux Vidéo',
     [Promotion.SI]: 'Cybersécurité',
     [Promotion.MSCI]: 'Management et Conseil en Systèmes d\'Information',
+    [Promotion.IABS]: 'Intelligence Artificielle & Business Solutions',
+    [Promotion.ID]: 'Ingénierie DevOps',
 };
 
 function getWeekKey(date: Date): string {
